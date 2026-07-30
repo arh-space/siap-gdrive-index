@@ -4,7 +4,7 @@ import { type Schema_Config } from "~/types/schema";
 
 const config: z.input<typeof Schema_Config> = {
   version: "2.4.2",
-  basePath: "https://siap-gdrive-index.vercel.app",
+  basePath: "https://siap.sdn118pekanbaru.sch.id",
   showGuideButton: false,
   cacheControl: "public, max-age=60, s-maxage=60, stale-while-revalidate",
 
