@@ -61,10 +61,26 @@ export async function ValidatePaths(
 
   const promises: Promise<PathFetch | null>[] = [];
   for (const [index, path] of paths.entries()) {
+    // 1. PENCEGAH ERROR URL KACAU
+    let decodedPath = path;
+    try {
+      decodedPath = decodeURIComponent(path);
+    } catch (e) {
+      // Biarkan jika sudah ter-decode atau aneh
+    }
+
+    // 2. TAMENG KARAKTER KHUSUS & SPASI SILUMAN
+    const escapedPath = decodedPath.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    const escapedTrimmed = decodedPath.trim().replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    
+    // 3. LOGIKA PINTAR: Cari yang persis SAMA, atau cari tanpa spasi berlebih
+    const queryName = decodedPath !== decodedPath.trim() 
+      ? `(name = '${escapedPath}' or name = '${escapedTrimmed}')` 
+      : `name = '${escapedPath}'`;
+
     const list = gdrive.files
       .list({
-        // Tameng pelindung karakter khusus (koma, titik, tanda kutip, dll)
-        q: `name = '${decodeURIComponent(path).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}' and trashed = false`,
+        q: `${queryName} and trashed = false`,
         fields: "files(id, name, mimeType, parents)",
         ...(decryptedSharedDrive && {
           supportsAllDrives: true,
@@ -86,52 +102,55 @@ export async function ValidatePaths(
           })),
         };
         return object;
+      })
+      .catch((e) => {
+        // 4. PEREDAM KEJUT BILA MENCARI FOLDER TERLALU DALAM (RATE LIMIT)
+        console.error("[GDrive API Error]:", e);
+        return null; 
       });
+      
     promises.push(list);
   }
 
   const pathData = await Promise.all(promises);
 
-  // Try to find index of invalid path (null value from promise)
-  // If found, return error message
-  const invalidPathIndex = pathData.findIndex((path) => !path);
+  const invalidPathIndex = pathData.findIndex((p) => !p);
   if (invalidPathIndex !== -1)
     return {
       success: false,
       message: "Invalid path",
       error: `Failed to find path: ${paths[invalidPathIndex]}`,
     };
-  const filteredPathData = pathData.filter((path) => path) as PathFetch[];
+  const filteredPathData = pathData.filter((p) => p) as PathFetch[];
 
-  // Validate each path
   let isValid = true;
   let invalidPath: string | undefined;
   const validatedPaths: PathFetch[] = [];
 
-  for (const path of filteredPathData) {
+  for (const p of filteredPathData) {
     if (!isValid) break;
-    if (!path.data.length) {
+    if (!p.data.length) {
       isValid = false;
-      invalidPath = path.path;
+      invalidPath = p.path;
       break;
     }
 
-    // Logika pencarian cerdas: cari sampai dapat folder dengan parent yang benar
+    // 5. PELACAK LOKASI PASTI (Mencegah salah masuk folder bernama sama)
     let foundMatch = false;
-    for (const item of path.data) {
-      if (path.index === 0) {
+    for (const item of p.data) {
+      if (p.index === 0) {
         if (item.parents === decryptedRootId || item.parents === decryptedSharedDrive) {
-          path.data = [item];
-          validatedPaths.push(path);
+          p.data = [item];
+          validatedPaths.push(p);
           foundMatch = true;
           break;
         }
       } else {
-        const previousPath = validatedPaths[path.index - 1];
+        const previousPath = validatedPaths[p.index - 1];
         if (!previousPath) break;
         if (item.parents === previousPath.data?.[0]?.id) {
-          path.data = [item];
-          validatedPaths.push(path);
+          p.data = [item];
+          validatedPaths.push(p);
           foundMatch = true;
           break;
         }
@@ -140,7 +159,7 @@ export async function ValidatePaths(
     
     if (!foundMatch) {
       isValid = false;
-      invalidPath = path.path;
+      invalidPath = p.path;
     }
   }
 
