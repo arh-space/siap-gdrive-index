@@ -63,6 +63,7 @@ export async function ValidatePaths(
   for (const [index, path] of paths.entries()) {
     const list = gdrive.files
       .list({
+        // Tameng pelindung karakter khusus (koma, titik, tanda kutip, dll)
         q: `name = '${decodeURIComponent(path).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}' and trashed = false`,
         fields: "files(id, name, mimeType, parents)",
         ...(decryptedSharedDrive && {
@@ -115,23 +116,34 @@ export async function ValidatePaths(
       break;
     }
 
-    /**
-     * Check for current path index
-     * If it's 0 / the first path, make sure the parent is the root folder
-     * If it's not, make sure the parent is the previous path's ID
-     */
+    // Logika pencarian cerdas: cari sampai dapat folder dengan parent yang benar
+    let foundMatch = false;
     for (const item of path.data) {
       if (path.index === 0) {
-        if (item.parents !== decryptedRootId && item.parents !== decryptedSharedDrive) break;
-        validatedPaths.push(path);
+        if (item.parents === decryptedRootId || item.parents === decryptedSharedDrive) {
+          path.data = [item];
+          validatedPaths.push(path);
+          foundMatch = true;
+          break;
+        }
       } else {
         const previousPath = validatedPaths[path.index - 1];
         if (!previousPath) break;
-        if (item.parents !== previousPath.data?.[0]?.id) break;
-        validatedPaths.push(path);
+        if (item.parents === previousPath.data?.[0]?.id) {
+          path.data = [item];
+          validatedPaths.push(path);
+          foundMatch = true;
+          break;
+        }
       }
     }
+    
+    if (!foundMatch) {
+      isValid = false;
+      invalidPath = path.path;
+    }
   }
+
   if (validatedPaths.length !== filteredPathData.length) {
     isValid = false;
     invalidPath = filteredPathData[validatedPaths.length]?.path;
