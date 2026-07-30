@@ -9,9 +9,9 @@ const config: z.input<typeof Schema_Config> = {
   cacheControl: "public, max-age=60, s-maxage=60, stale-while-revalidate",
 
   apiConfig: {
-    rootFolder: "14z3ikAoxFIrlNs0Gj8dtV8BOqDwCoMrp",
+    rootFolder: "555526cec9a8378f3bbbcc9f5f28a6529a97d386eb04f7cb0f2a5d2e9e711c332080b5faa62452043c367fc8eb8c59b14c;fab3663acdfb29c3dc5ae6c3",
     isTeamDrive: true,
-    sharedDrive: "0AJ1xx7VKk3-PUk9PVA",
+    sharedDrive: "31b150de7226668a1b55ca4949aff999fb757e760e2b8957cc729c347e6bf7e9b5dcf5;2def54411e8e941840e1a4b3",
 
     defaultQuery: ["trashed = false", "(not mimeType contains 'google-apps' or mimeType contains 'folder')"],
     defaultField:
