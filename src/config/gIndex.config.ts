@@ -27,7 +27,7 @@ const config: z.input<typeof Schema_Config> = {
    *
    * @default false
    */
-  showGuideButton: true,
+  showGuideButton: false,
 
   /**
    * How long the cache will be stored in the browser
@@ -47,7 +47,7 @@ const config: z.input<typeof Schema_Config> = {
      * Then, copy the folder id and paste it here
      */
     rootFolder:
-      "63d70e38a60edae86b93c34cd3afe8b7962e1d163f3fde36b855f8cac0739686763895f7cb8fac3e948996b8c5662e5b00;3573b8e627b7b0b629ecf878",
+      "8f60817ac6db70d33ba236527db439a64353949ec4d99b2cf6600e65e5203561c3e2e8;18710174e0e60cdd0991c476",
 
     /**
      * If your rootfolder inside a shared drive, you NEED to set this to true
@@ -63,7 +63,7 @@ const config: z.input<typeof Schema_Config> = {
      * Then you need to encrypt it using `/api/internal/encrypt?q=:shared_drive_id` route
      */
     isTeamDrive: true,
-    sharedDrive: "e0d1c42488d72574b0c1b9d77f45f0bc8e02ebc5020a2d2398fac4af874b06d5c75c27971efd1156694a1d526281cdfa00;2787c75f9a586d0814e2a61b",
+    sharedDrive: "0f8dff1a64b506da466485e0a170bc649df9da16b5baf32256c786c602911b6f37e1a284f255fafd3863f38043a97bdc38;e369b29f17235e8b2e47ab9c",
 
     defaultQuery: ["trashed = false", "(not mimeType contains 'google-apps' or mimeType contains 'folder')"],
     defaultField:
@@ -274,7 +274,13 @@ const config: z.input<typeof Schema_Config> = {
      *  href: string,
      * }
      */
-    supports: [],
+    supports: [
+  {
+    "name": "Support Us",
+    "currency": "IDR",
+    "href": "https://traktir.in/sdn118pku"
+  }
+],
 
     /**
      * Footer content
@@ -295,7 +301,7 @@ const config: z.input<typeof Schema_Config> = {
      */
     footer: [
   {
-    "value": "Copyright © {{ year }}  {{ siteName }}- Sistem Informasi Arsip Pembelajaran Ver.{{ version }}. All Rights Reserved."
+    "value": "Copyright © {{ year }}  {{ siteName }} - Sistem Informasi Arsip Pembelajaran Ver.{{ version }}. All Rights Reserved."
   },
   {
     "value": "Developed & Maintened by {{ author }}"
