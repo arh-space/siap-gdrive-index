@@ -63,7 +63,7 @@ export async function ValidatePaths(
   for (const [index, path] of paths.entries()) {
     const list = gdrive.files
       .list({
-        q: `name = '${decodeURIComponent(path)}' and trashed = false`,
+        q: `name = '${decodeURIComponent(path).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}' and trashed = false`,
         fields: "files(id, name, mimeType, parents)",
         ...(decryptedSharedDrive && {
           supportsAllDrives: true,
